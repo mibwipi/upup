@@ -1,11 +1,11 @@
-
 import tkinter as tk
 from tkinter import ttk, messagebox
 import time
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
 import calendar
 import matplotlib.pyplot as plt
+import numpy as np
 
 plt.rcParams['font.family'] = 'Malgun Gothic'
 plt.rcParams['axes.unicode_minus'] = False
@@ -16,6 +16,9 @@ class StudyApp:
         self.root = root
         self.root.title("자기주도 학습 관리 프로그램")
         self.root.geometry("900x850")
+
+        # 🔥 추가된 핵심 코드 (일요일 시작으로 변경)
+        calendar.setfirstweekday(calendar.SUNDAY)
 
         self.start_time = 0
         self.elapsed_time = 0
@@ -28,7 +31,7 @@ class StudyApp:
         self.current_year = datetime.now().year
         self.current_month = datetime.now().month
 
-        self.subjects = ["Python", "SQLD", "Linux", "AWS", "파이썬", ""]
+        self.subjects = ["Python", "SQLD", "Linux"]
 
         self.create_ui()
         self.load_data()
@@ -36,11 +39,8 @@ class StudyApp:
         self.update_timer()
 
     def create_ui(self):
-        tk.Label(
-            self.root,
-            text="자기주도 학습 관리 프로그램",
-            font=("맑은고딕", 18, "bold")
-        ).pack(pady=10)
+        tk.Label(self.root, text="자기주도 학습 관리 프로그램",
+                 font=("맑은고딕", 18, "bold")).pack(pady=10)
 
         self.combo = ttk.Combobox(self.root, values=self.subjects, width=20)
         self.combo.pack()
@@ -51,17 +51,11 @@ class StudyApp:
         self.subject_entry = tk.Entry(subject_frame)
         self.subject_entry.grid(row=0, column=0)
 
-        ttk.Button(
-            subject_frame,
-            text="과목 추가",
-            command=self.add_subject
-        ).grid(row=0, column=1)
+        ttk.Button(subject_frame, text="과목 추가",
+                   command=self.add_subject).grid(row=0, column=1)
 
-        self.timer_label = tk.Label(
-            self.root,
-            text="00:00:00",
-            font=("Arial", 30)
-        )
+        self.timer_label = tk.Label(self.root, text="00:00:00",
+                                    font=("Arial", 30))
         self.timer_label.pack(pady=10)
 
         btn_frame = tk.Frame(self.root)
@@ -71,22 +65,6 @@ class StudyApp:
         ttk.Button(btn_frame, text="일시정지", command=self.pause_timer).grid(row=0, column=1)
         ttk.Button(btn_frame, text="종료", command=self.stop_timer).grid(row=0, column=2)
         ttk.Button(btn_frame, text="그래프", command=self.show_graph).grid(row=0, column=3)
-
-        goal_frame = tk.Frame(self.root)
-        goal_frame.pack(pady=10)
-
-        tk.Label(goal_frame, text="목표 시간(시간)").grid(row=0, column=0)
-
-        self.goal_entry = tk.Entry(goal_frame, width=10)
-        self.goal_entry.grid(row=0, column=1)
-
-        ttk.Button(goal_frame, text="목표 설정", command=self.set_goal).grid(row=0, column=2)
-
-        stat_frame = tk.Frame(self.root)
-        stat_frame.pack(pady=5)
-
-        ttk.Button(stat_frame, text="주간 통계", command=self.show_weekly_stats).grid(row=0, column=0)
-        ttk.Button(stat_frame, text="월간 통계", command=self.show_monthly_stats).grid(row=0, column=1)
 
         self.listbox = tk.Listbox(self.root, width=100, height=15)
         self.listbox.pack(pady=10)
@@ -104,11 +82,6 @@ class StudyApp:
         self.calendar_frame = tk.Frame(self.root)
         self.calendar_frame.pack(pady=10)
 
-        self.plan_entry = tk.Entry(self.root, width=50)
-        self.plan_entry.pack(pady=5)
-
-        ttk.Button(self.root, text="계획 저장", command=self.save_plan).pack()
-
         self.update_calendar()
 
     def add_subject(self):
@@ -118,17 +91,6 @@ class StudyApp:
             self.combo["values"] = self.subjects
             messagebox.showinfo("추가 완료", f"{subject} 과목 추가")
         self.subject_entry.delete(0, tk.END)
-
-    def set_goal(self):
-        subject = self.combo.get()
-        if not subject:
-            return
-        try:
-            self.goal_hours[subject] = float(self.goal_entry.get())
-            self.save_data()
-            messagebox.showinfo("저장", f"{subject} 목표 설정 완료")
-        except ValueError:
-            messagebox.showwarning("오류", "숫자를 입력하세요.")
 
     def start_timer(self):
         if not self.running:
@@ -186,12 +148,8 @@ class StudyApp:
 
         days = ["일", "월", "화", "수", "목", "금", "토"]
         for col, day_name in enumerate(days):
-            tk.Label(
-                self.calendar_frame,
-                text=day_name,
-                width=5,
-                font=("맑은고딕", 10, "bold")
-            ).grid(row=0, column=col)
+            tk.Label(self.calendar_frame, text=day_name,
+                     width=5, font=("맑은고딕", 10, "bold")).grid(row=0, column=col)
 
         cal = calendar.monthcalendar(self.current_year, self.current_month)
         today = datetime.now()
@@ -207,13 +165,10 @@ class StudyApp:
                         today.day == day
                     ) else "SystemButtonFace"
 
-                    tk.Button(
-                        self.calendar_frame,
-                        text=str(day),
-                        width=5,
-                        bg=color,
-                        command=lambda d=day: self.show_day_detail(d)
-                    ).grid(row=row, column=col, padx=2, pady=2)
+                    tk.Button(self.calendar_frame, text=str(day),
+                              width=5, bg=color,
+                              command=lambda d=day: self.show_day_detail(d)
+                              ).grid(row=row, column=col, padx=2, pady=2)
 
     def prev_month(self):
         self.current_month -= 1
@@ -232,32 +187,22 @@ class StudyApp:
     def show_day_detail(self, day):
         date = f"{self.current_year}-{self.current_month:02}-{day:02}"
 
-        self.listbox.insert(tk.END, f"📅 {date}")
+        top = tk.Toplevel(self.root)
+        top.title(f"{date} 계획")
+        top.geometry("400x350")
 
-        if date in self.study_log:
-            for item in self.study_log[date]:
-                study_time = item["time"]
-                if isinstance(study_time, str):
-                    display_time = study_time
-                else:
-                    display_time = self.format_time(int(study_time))
+        tk.Label(top, text=date, font=("맑은고딕", 12, "bold")).pack(pady=10)
 
-                self.listbox.insert(
-                    tk.END,
-                    f"• {item['subject']} | {display_time}"
-                )
-        else:
-            self.listbox.insert(tk.END, "공부 기록 없음")
+        text = tk.Text(top, width=40, height=10)
+        text.pack(pady=10)
 
-        if date in self.plan_log:
-            self.listbox.insert(tk.END, f"계획 : {self.plan_log[date]}")
+        def save_plan():
+            self.plan_log[date] = text.get("1.0", tk.END).strip()
+            self.save_data()
+            messagebox.showinfo("저장", "완료")
+            top.destroy()
 
-    def save_plan(self):
-        date = datetime.now().strftime("%Y-%m-%d")
-        self.plan_log[date] = self.plan_entry.get()
-        self.plan_entry.delete(0, tk.END)
-        self.save_data()
-        messagebox.showinfo("저장", "계획 저장 완료")
+        ttk.Button(top, text="저장", command=save_plan).pack()
 
     def show_graph(self):
         subject_time = {}
@@ -265,56 +210,32 @@ class StudyApp:
             for item in logs:
                 subject_time[item["subject"]] = subject_time.get(item["subject"], 0) + float(item["time"])
 
+        hours = [v / 3600 for v in subject_time.values()]
+
         plt.figure(figsize=(8, 5))
-        plt.bar(subject_time.keys(), [v / 3600 for v in subject_time.values()])
+        plt.bar(subject_time.keys(), hours)
+
+        max_val = max(hours) if hours else 1
+        y_ticks = np.arange(0, max_val + 0.5, 0.5)
+        plt.yticks(y_ticks)
+
         plt.title("과목별 학습 시간")
-        plt.ylabel("시간")
+        plt.ylabel("시간 (30분 단위)")
         plt.show()
-
-    def show_weekly_stats(self):
-        total = 0
-        week_ago = datetime.now() - timedelta(days=7)
-
-        for date, logs in self.study_log.items():
-            d = datetime.strptime(date, "%Y-%m-%d")
-            if d >= week_ago:
-                for item in logs:
-                    total += float(item["time"])
-
-        messagebox.showinfo("주간 통계", f"{total / 3600:.2f} 시간")
-
-    def show_monthly_stats(self):
-        total = 0
-        now = datetime.now()
-
-        for date, logs in self.study_log.items():
-            d = datetime.strptime(date, "%Y-%m-%d")
-            if d.year == now.year and d.month == now.month:
-                for item in logs:
-                    total += float(item["time"])
-
-        messagebox.showinfo("월간 통계", f"{total / 3600:.2f} 시간")
 
     def load_records(self):
         for date, logs in self.study_log.items():
             for item in logs:
-                study_time = item["time"]
-                if isinstance(study_time, str):
-                    display_time = study_time
-                else:
-                    display_time = self.format_time(int(study_time))
-
                 self.listbox.insert(
                     tk.END,
-                    f"{date} | {item['subject']} | {display_time}"
+                    f"{date} | {item['subject']} | {self.format_time(int(item['time']))}"
                 )
 
     def save_data(self):
         with open("data.json", "w", encoding="utf-8") as f:
             json.dump({
                 "study": self.study_log,
-                "plan": self.plan_log,
-                "goal": self.goal_hours
+                "plan": self.plan_log
             }, f, ensure_ascii=False, indent=4)
 
     def load_data(self):
@@ -323,13 +244,10 @@ class StudyApp:
                 data = json.load(f)
                 self.study_log = data.get("study", {})
                 self.plan_log = data.get("plan", {})
-                self.goal_hours = data.get("goal", {})
-        except FileNotFoundError:
+        except:
             pass
 
 
 root = tk.Tk()
 app = StudyApp(root)
 root.mainloop()
-
-### 파이썬 기말과제
